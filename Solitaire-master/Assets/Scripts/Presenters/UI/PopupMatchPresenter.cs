@@ -32,7 +32,7 @@ namespace Solitaire.Presenters
 
             // Bind commands
             _game.RestartCommand.BindTo(_buttonRestart).AddTo(this);
-            _game.NewMatchCommand.BindTo(_buttonNewMatch).AddTo(this);
+            _game.NewMatchSinglePlayerCommand.BindTo(_buttonNewMatch).AddTo(this);
             _game.ContinueCommand.BindTo(_buttonContinue).AddTo(this);
         }
 

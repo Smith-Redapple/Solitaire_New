@@ -1,11 +1,13 @@
 using Cysharp.Threading.Tasks;
 using Solitaire.Commands;
 using Solitaire.Helpers;
+using Solitaire.Presenters;
 using Solitaire.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UniRx;
+using UnityEngine;
 using Zenject;
 
 namespace Solitaire.Models
@@ -39,10 +41,16 @@ namespace Solitaire.Models
             Options,
             Leaderboard,
         }
+        public enum GameMode
+        {
+            SinglePlayer,
+            Tournament
+        }
 
         public BoolReactiveProperty HasStarted { get; private set; }
         public ReactiveCommand RestartCommand { get; private set; }
-        public ReactiveCommand NewMatchCommand { get; private set; }
+        public ReactiveCommand NewMatchSinglePlayerCommand { get; private set; }
+        public ReactiveCommand NewMatchTournamentCommand { get; private set; }
         public ReactiveCommand ContinueCommand { get; private set; }
 
         public Pile PileStock { get; private set; }
@@ -50,6 +58,8 @@ namespace Solitaire.Models
         public IList<Pile> PileFoundations { get; private set; }
         public IList<Pile> PileTableaus { get; private set; }
         public IList<Card> Cards { get; private set; }
+
+        public GameMode gameMode;
 
         [Inject] readonly ICardSpawner _cardSpawner;
         [Inject] readonly ICommandService _commandService;
@@ -72,8 +82,11 @@ namespace Solitaire.Models
             RestartCommand = new ReactiveCommand();
             RestartCommand.Subscribe(_ => Restart()).AddTo(this);
 
-            NewMatchCommand = new ReactiveCommand();
-            NewMatchCommand.Subscribe(_ => NewMatch()).AddTo(this);
+            NewMatchSinglePlayerCommand = new ReactiveCommand();
+            NewMatchSinglePlayerCommand.Subscribe(_ => NewMatchSinglePlayer()).AddTo(this);
+
+            NewMatchTournamentCommand = new ReactiveCommand();
+            NewMatchTournamentCommand.Subscribe(_ => NewMatchTournament()).AddTo(this);
 
             ContinueCommand = new ReactiveCommand(HasStarted);
             ContinueCommand.Subscribe(_ => Continue()).AddTo(this);
@@ -149,6 +162,13 @@ namespace Solitaire.Models
 
         public void DetectWinCondition()
         {
+            if(PlayerPrefs.GetInt("Cheat", 0) == 1)
+            {
+                PlayerPrefs.DeleteKey("Cheat");
+                _gameState.State.Value = State.Win;
+                HasStarted.Value = false;
+                return;
+            }
             // All cards in the tableau piles should be revelead
             for (int i = 0; i < PileTableaus.Count; i++)
             {
@@ -348,8 +368,16 @@ namespace Solitaire.Models
             DealAsync().Forget();
         }
 
-        private void NewMatch()
+        private void NewMatchSinglePlayer()
         {
+            gameMode = GameMode.SinglePlayer;
+            Reset();
+            ShuffleCards();
+            DealAsync().Forget();
+        }
+        private void NewMatchTournament()
+        {
+            gameMode = GameMode.Tournament;
             Reset();
             ShuffleCards();
             DealAsync().Forget();

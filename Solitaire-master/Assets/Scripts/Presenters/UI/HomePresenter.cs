@@ -9,7 +9,8 @@ namespace Solitaire.Presenters
 {
     public class HomePresenter : OrientationAwarePresenter
     {
-        [SerializeField] Button _buttonNewMatch;
+        [SerializeField] Button _buttonNewMatchSinglePlayer;
+        [SerializeField] Button _buttonNewMatchTournament;
         [SerializeField] Button _buttonContinue;
         [SerializeField] Button _buttonOptions;
         [SerializeField] Button _buttonLeaderboard;
@@ -39,10 +40,12 @@ namespace Solitaire.Presenters
         {
             base.Start();
 
-            _game.NewMatchCommand.BindTo(_buttonNewMatch).AddTo(this);
+            _game.NewMatchSinglePlayerCommand.BindTo(_buttonNewMatchSinglePlayer).AddTo(this);
+            _game.NewMatchTournamentCommand.BindTo(_buttonNewMatchTournament).AddTo(this);
             _game.ContinueCommand.BindTo(_buttonContinue).AddTo(this);
             _gamePopup.OptionsCommand.BindTo(_buttonOptions).AddTo(this);
             _gamePopup.LeaderboardCommand.BindTo(_buttonLeaderboard).AddTo(this);
+
 
             // Play animation sequence on state change
             _gameState.State.Where(state => state == Game.State.Home).Subscribe(_ => 

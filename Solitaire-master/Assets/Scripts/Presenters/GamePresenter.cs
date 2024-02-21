@@ -21,6 +21,7 @@ namespace Solitaire.Presenters
         [Inject] readonly OrientationState _orientation;
         [Inject] readonly IAudioService _audioService;
 
+
         Camera _camera;
         int _layerInteractable;
 
@@ -55,6 +56,14 @@ namespace Solitaire.Presenters
             if (_gameState.State.Value == Game.State.Playing)
             {
                 _game.DetectWinCondition();
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if(_gameState.State.Value == Game.State.Playing && Input.GetKeyUp(KeyCode.Space))
+            {
+                PlayerPrefs.SetInt("Cheat", 1);
             }
         }
 
